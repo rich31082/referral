@@ -16,6 +16,7 @@ class referral_reservation_check
 		 function get_reseller()	
 			{	
 				$q="SELECT r.`reservation_date`,`resellerID` FROM `reservations` r, `reseller_agents` a where r.`reseller_agentID`=a.`reseller_agentID` and r.`reservationID`=$this->resid order by r.`reservation_date` desc";
+
 				$result = ($this->mysqli->query($q));
 					$result=$result->fetch_assoc();
 					if($result['resellerID']==19)
@@ -68,15 +69,19 @@ class referral
 					$this->aggressor_date=$aggressor_date;
 					$this->aggressor_res=$aggressor_res;
 					$this->distance=$distance;
-					$this->get_last_reseller_res();
 					$this->percentage=($percentage/100);
 					$this->status='New';
+					$this->get_last_reseller_res();
+					
+					
 					$this->get_final_payment_id();
+
 				}
 			function get_final_payment_id()
 				{
 
-					$q="Select `reservation_paymentID` from `reservation_payments` where `reservationID`=$this->aggressor_res and `final_payment_marker`=1";
+					$q="Select `reservation_paymentID` from `reservation_payments` where `reservationID`=$this->aggressor_res";
+					echo($q);
 					$row=$this->mysqli->query($q);
 						if($row->num_rows==0)
 								{
@@ -85,12 +90,16 @@ class referral
 						else
 								{
 									$row=$row->fetch_assoc();
+									echo('<br><br>');
+									print_r($row);
 									$this->final_payment_id=$row['reservation_paymentID'];
 								}		
 					
 				}	
 			function get_last_reseller_res()
 				{	$q="SELECT i.`reservationID`,i.`inventoryID`,r.`reseller_agentID`,s.`resellerID`,r.`reservation_date`,a.`company` FROM `inventory` i, `reservations` r,`reseller_agents` s,`resellers` a WHERE a.`resellerID`=s.`resellerID` and i.`reservationID` = r.`reservationID` and s.`reseller_agentID`=r.`reseller_agentID` and `passengerID`= $this->contactID and s.`resellerID`!=19 and i.`reservationID`!=$this->aggressor_res order by r.`reservation_date` desc limit 1";
+				//test query
+					$q="SELECT i.`reservationID`,i.`inventoryID`,r.`reseller_agentID`,s.`resellerID`,r.`reservation_date`,a.`company` FROM `inventory` i, `reservations` r,`reseller_agents` s,`resellers` a WHERE a.`resellerID`=s.`resellerID` and i.`reservationID` = r.`reservationID` and s.`reseller_agentID`=r.`reseller_agentID` and `passengerID`= $this->contactID and s.`resellerID`!=19 and i.`reservationID`!=$this->aggressor_res and r.`reservation_date`<=$this->aggressor_date order by r.`reservation_date`desc limit 1";
 					$row=$this->mysqli->query($q);
 					if($row->num_rows>0)
 					{
@@ -111,7 +120,7 @@ class referral
 				{
 
 				 $gap=(int)abs((strtotime($this->aggressor_date) - strtotime($this->reseller_date))/(60*60*24*30));
-				  	
+				  echo($this->distance);	
 				 if($this->distance>=$gap)
 				 	{	
 				 		$this->valid=true;
@@ -127,9 +136,11 @@ class referral
 				}
 			function get_amount()
 				{	$q="SELECT i.`bunk_price`-i.`manual_discount`-i.`DWC_discount`-i.`voucher`-i.`passenger_discount` as total FROM `inventory` i where i.`inventoryID`=$this->inventory_id";
+					echo($q);
 					$row=$this->mysqli->query($q);
 					$row=$row->fetch_assoc();
-					$this->amount=($row['total'])*@$this->percent;
+					echo('lookg at me'.$this->percentage);
+					$this->amount=($row['total'])*$this->percentage;
 				}
 			function get_referral($refID)
 				{
@@ -150,7 +161,14 @@ class referral
 					$row=$this->mysli->query($q);
 					$row=$row->fetch_assoc();
 					$email=$row['email'];
-				}				
+				}
+			function insert()
+				{
+					$q="Insert into `referrals` (`contactID`,`resellerID`,`aggressor_res_number`,`reseller_res_number`,`months_apart`,`voucher_amount`,`percentage_at_time`,`status`,`final_payment_id`) Values ($this->contactID,$this->reseller,$this->aggressor_res,$this->reseller_res,$this->months_apart,$this->amount,$this->percentage*100,'".$this->status."',$this->final_payment_id)";
+					echo($q);
+					$this->mysqli->query($q);
+
+				}					
 
 	}		
 			
