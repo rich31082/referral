@@ -36,7 +36,7 @@ class referral_reservation_check
 				$q=$this->mysqli->query($q);
 					while($row=mysqli_fetch_assoc($q))
 							{	//print_r($row);
-								if($row['passengerID']!='0')
+								if($row['passengerID']!='0'&&$row['passengerID']!=61531873)
 								array_push($this->passengers,$row);
 							}		
 
@@ -140,7 +140,7 @@ class referral
 					$row=$this->mysqli->query($q);
 					$row=$row->fetch_assoc();
 					echo('lookg at me'.$this->percentage);
-					$this->amount=($row['total'])*$this->percentage;
+					$this->amount=floor(($row['total']*$this->percentage));
 				}
 			function get_referral($refID)
 				{
@@ -152,7 +152,7 @@ class referral
 					$this->reseller_res=$reseller_res_number;
 					$this->months_apart=$months_apart;
 					$this->amount=$voucher_amount;
-					$this->percentage=$percentage_at_time;
+					$this->percentage=($percentage_at_time);
 					$this->status=$status;
 				}
 			function referral_email($status,$email_text)
@@ -164,7 +164,7 @@ class referral
 				}
 			function insert()
 				{
-					$q="Insert into `referrals` (`contactID`,`resellerID`,`aggressor_res_number`,`reseller_res_number`,`months_apart`,`voucher_amount`,`percentage_at_time`,`status`,`final_payment_id`) Values ($this->contactID,$this->reseller,$this->aggressor_res,$this->reseller_res,$this->months_apart,$this->amount,$this->percentage*100,'".$this->status."',$this->final_payment_id)";
+					$q="Insert into `referrals` (`contactID`,`resellerID`,`aggressor_res_number`,`reseller_res_number`,`months_apart`,`voucher_amount`,`percentage_at_time`,`status`,`final_payment_id`,`company`) Values ($this->contactID,$this->reseller,$this->aggressor_res,$this->reseller_res,$this->months_apart,$this->amount,$this->percentage*100,'".$this->status."',$this->final_payment_id,'".$this->reseller_name."')";
 					echo($q);
 					$this->mysqli->query($q);
 
