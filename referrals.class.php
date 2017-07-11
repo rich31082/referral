@@ -62,6 +62,7 @@ class referral
 		var $percentage;
 		var $months_apart;
 		var $final_payment_id;
+		var $email;
 			function __construct($passenger,$aggressor_res,$aggressor_date,$mysqli,$distance,$percentage)
 				{
 					$this->mysqli=$mysqli;
@@ -99,7 +100,7 @@ class referral
 			function get_last_reseller_res()
 				{	$q="SELECT i.`reservationID`,i.`inventoryID`,r.`reseller_agentID`,s.`resellerID`,r.`reservation_date`,a.`company` FROM `inventory` i, `reservations` r,`reseller_agents` s,`resellers` a WHERE a.`resellerID`=s.`resellerID` and i.`reservationID` = r.`reservationID` and s.`reseller_agentID`=r.`reseller_agentID` and `passengerID`= $this->contactID and s.`resellerID`!=19 and i.`reservationID`!=$this->aggressor_res order by r.`reservation_date` desc limit 1";
 				//test query
-					$q="SELECT i.`reservationID`,i.`inventoryID`,r.`reseller_agentID`,s.`resellerID`,r.`reservation_date`,a.`company` FROM `inventory` i, `reservations` r,`reseller_agents` s,`resellers` a WHERE a.`resellerID`=s.`resellerID` and i.`reservationID` = r.`reservationID` and s.`reseller_agentID`=r.`reseller_agentID` and `passengerID`= $this->contactID and s.`resellerID`!=19 and i.`reservationID`!=$this->aggressor_res and r.`reservation_date`<=$this->aggressor_date order by r.`reservation_date`desc limit 1";
+					$q="SELECT i.`reservationID`,i.`inventoryID`,r.`reseller_agentID`,s.`resellerID`,r.`reservation_date`,a.`company`,s.`email` FROM `inventory` i, `reservations` r,`reseller_agents` s,`resellers` a WHERE a.`resellerID`=s.`resellerID` and i.`reservationID` = r.`reservationID` and s.`reseller_agentID`=r.`reseller_agentID` and `passengerID`= $this->contactID and s.`resellerID`!=19 and i.`reservationID`!=$this->aggressor_res and r.`reservation_date`<=$this->aggressor_date order by r.`reservation_date`desc limit 1";
 					$row=$this->mysqli->query($q);
 					if($row->num_rows>0)
 					{
@@ -109,6 +110,7 @@ class referral
 						$this->reseller_date=$row['reservation_date'];
 						$this->inventory_id=$row['inventoryID'];
 						$this->reseller_name=$row['company'];
+						$this->email=$row['email'];
 						$this->check_distance();
 					}
 					else
@@ -157,14 +159,15 @@ class referral
 				}
 			function referral_email($status,$email_text)
 				{
-					$q="Select `email` form `resellers` where `resellerID`=$this->reseller";
+					$q="Select `email` form `resellers` where `resellerID`='".$this->reseller."'";
 					$row=$this->mysli->query($q);
 					$row=$row->fetch_assoc();
 					$email=$row['email'];
+					mail('rich@aggressor.com','email_test',$email);
 				}
 			function insert()
-				{
-					$q="Insert into `referrals` (`contactID`,`resellerID`,`aggressor_res_number`,`reseller_res_number`,`months_apart`,`voucher_amount`,`percentage_at_time`,`status`,`final_payment_id`,`company`) Values ($this->contactID,$this->reseller,$this->aggressor_res,$this->reseller_res,$this->months_apart,$this->amount,$this->percentage*100,'".$this->status."',$this->final_payment_id,'".$this->reseller_name."')";
+				{	echo($this->email);
+					$q="Insert into `referrals` (`contactID`,`resellerID`,`aggressor_res_number`,`reseller_res_number`,`months_apart`,`voucher_amount`,`percentage_at_time`,`status`,`final_payment_id`,`company`,`email`) Values ($this->contactID,$this->reseller,$this->aggressor_res,$this->reseller_res,$this->months_apart,$this->amount,$this->percentage*100,'".$this->status."',$this->final_payment_id,'".$this->reseller_name."','".$this->email."')";
 					echo($q);
 					$this->mysqli->query($q);
 

@@ -36,7 +36,7 @@ $referral_array=array();
 function scan($mysqli,$months_apart,$percentage)
 	{
 		$q="Select a.* from `reservation_payments` a where not exists (Select * from `referrals` where a.`reservation_paymentID`=`final_payment_id`) and a.`final_payment_marker`=1 and a.`payment_date`>20120101";
-		echo($q);
+		//echo($q);
 		$row=$mysqli->query($q);
 		while($value=$row->fetch_assoc())
 					{
@@ -61,7 +61,7 @@ function check_reservations($res_array,$mysqli,$months_apart,$percentage)
 				foreach($ref->passengers as $aggressor_passenger)
 				{
 					$passenger=new referral($aggressor_passenger['passengerID'],$ref->resid,$ref->date_aggressor,$mysqli,$months_apart,$percentage);
-						print_r($passenger);
+						//print_r($passenger);
 						if($passenger->valid)
 						{	
 							//array_push($referral_array,$passenger);
