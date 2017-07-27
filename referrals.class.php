@@ -95,8 +95,8 @@ class referral
 						else
 								{
 									$row=$row->fetch_assoc();
-									echo('<br><br>');
-									print_r($row);
+									//echo('<br><br>');
+									//print_r($row);
 									$this->final_payment_id=$row['reservation_paymentID'];
 								}		
 					
@@ -109,7 +109,7 @@ class referral
 					if($row->num_rows>0)
 					{
 						$row=$row->fetch_assoc();
-						$this->reseller_agent=$row['resseller_agentID'];
+						$this->reseller_agent=$row['reseller_agentID'];
 						$this->reseller=$row['resellerID'];
 						$this->reseller_res=$row['reservationID'];
 						$this->reseller_date=$row['reservation_date'];
@@ -127,7 +127,7 @@ class referral
 			function get_aggressor_inventory_id()
 					{
 						$q="Select `inventoryid` from `inventory` where `reservationID`=$this->aggressor_res and `passengerID`=$this->contactID";
-						echo($q);
+						//echo($q);
 						$row=$this->mysqli->query($q);
 						$row=$row->fetch_assoc();
 						
@@ -138,7 +138,7 @@ class referral
 
 				 $gap=(int)abs((strtotime($this->aggressor_date) - strtotime($this->reseller_date))/(60*60*24*30));
 				  //die($this->aggressor_date.' '.$this->reseller_date.'gap'.$gap);
-				  echo('here'.$this->distance);	
+				 // echo('here'.$this->distance);	
 				 if($this->distance>=$gap)
 				 	{	
 				 		$this->valid=true;
@@ -155,7 +155,7 @@ class referral
 				}
 			function get_amount()
 				{	$q="SELECT i.`bunk_price`-i.`manual_discount`-i.`DWC_discount`-i.`voucher`-i.`passenger_discount` as total FROM `inventory` i where i.`inventoryID`=$this->inventory_id";
-					echo($q);
+					//echo($q);
 					$row=$this->mysqli->query($q);
 					$row=$row->fetch_assoc();
 					//echo('lookg at me'.$this->percentage);
@@ -186,16 +186,25 @@ class referral
 				}
 
 			function make_voucher()
-				{	$today = date("Ymd");
-					$end = date('Ymd', strtotime('+1 years'));
-
- 					$q="Insert into `voucher` (`voucher`,`contactID`,`contact_textfield`,`agency`,`boatID`,`amount`,`issueboatID`,`expiration_date`,`date_added`,`reason1`) Values('Referral',".$this->reseller_agent.",'',".$this->$reseller_name.",'All Yachts',$this->amount,'',$end,$today,'referral voucher')";
+				{	
+					$query="Select `contactID` from `contacts` where `reseller_agentID`=$this->reseller_agent";
+					$row=$this->mysqli->query($query);
+					$row=$row->fetch_assoc();
+					$today = date("Ymd");
+					$end = date("m/d/Y", strtotime('+1 years'));
+					$q="Insert into `voucher` (`voucher`,`contactID`,`contact_textfield`,`agency`,`boatID`,`amount`,`issueboatID`,`expiration_date`,`date_added`,`reason1`) Values('Referral Voucher',".$row['contactID'].",' ',"."'".$this->reseller_name."'".",'All Yachts',$this->amount,'Reseller Loyalty Program',"."'".$end."',$today,'Reseller Loyalty Program')";
+ 				//	echo($q);
+ 					$q=$this->mysqli->query($q);
+ 					$voucher=$this->mysqli->insert_id;
+ 				//	echo('voucher'.$voucher);
+ 					$q="Update `referrals` Set `voucher`=$voucher where `aggressor_res_number`=$this->aggressor_res AND `contactID`=$this->contactID";
+ 					$this->mysqli->query($q);
  					
 				}	
 			function insert()
-				{	echo($this->email);
+				{	//echo($this->email);
 					$q="Insert into `referrals` (`contactID`,`resellerID`,`aggressor_res_number`,`aggressor_date`,`reseller_res_number`,`months_apart`,`voucher_amount`,`percentage_at_time`,`status`,`final_payment_id`,`company`,`email`) Values ($this->contactID,$this->reseller,$this->aggressor_res,$this->aggressor_date,$this->reseller_res,$this->months_apart,$this->amount,$this->percentage*100,'".$this->status."',$this->final_payment_id,'".$this->reseller_name."','".$this->email."')";
-					echo($q);
+					//echo($q);
 					$this->mysqli->query($q);
 
 				}					
