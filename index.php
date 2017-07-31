@@ -35,7 +35,7 @@ $referral_array=array();
 		scan($mysqli,$months_apart,$percentage);
 function scan($mysqli,$months_apart,$percentage)
 	{
-		$q="Select a.* from `reservation_payments` a where not exists (Select * from `referrals` where a.`reservation_paymentID`=`final_payment_id`) and a.`final_payment_marker`=1 and a.`payment_date`>20120101";
+		$q="Select a.* from `reservation_payments` a where not exists (Select * from `referrals` where a.`reservation_paymentID`=`final_payment_id`) and a.`final_payment_marker`=1 and a.`payment_date`>20170101";
 		//echo($q);
 		$row=$mysqli->query($q);
 		while($value=$row->fetch_assoc())
