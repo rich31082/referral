@@ -34,15 +34,40 @@ $referral_array=array();
 */
 		scan($mysqli,$months_apart,$percentage);
 function scan($mysqli,$months_apart,$percentage)
-	{
-		$q="Select a.* from `reservation_payments` a where not exists (Select * from `referrals` where a.`reservation_paymentID`=`final_payment_id`) and a.`final_payment_marker`=1 and a.`payment_date`>20170101";
-		//echo($q);
+	{	//study mode
+		$year=14;
+		while($year<=14)
+		{
+		$month=1;
+			while($month<=12)
+				{
+				if($month<10)
+					{
+						$state_month='0'.$month;
+					}	
+					else
+					{
+						$state_month=$month;
+					}				
+		$start_date='20'.$year.$state_month.'01';
+		//study mode
+		//$start_date='';
+		echo($start_date);
+		$q="Select a.* from `reservation_payments` a where not exists (Select * from `referral_study` where a.`reservation_paymentID`=`final_payment_id`) and a.`final_payment_marker`=1 and a.`payment_date`>=$start_date";
+		
 		$row=$mysqli->query($q);
 		while($value=$row->fetch_assoc())
 					{
 						process_reservation($value['reservationID'],$mysqli,$months_apart,$percentage);
 					}
-
+		//study mode
+		
+		//referral_study($start_date,$mysqli);			
+				$month++;
+				}//month loop
+		$year++;
+		}//year_loop
+		
 	}		
 function process_reservation($res,$mysqli,$months_apart,$percentage)
 	{
@@ -74,4 +99,15 @@ function check_reservations($res_array,$mysqli,$months_apart,$percentage)
 			}
 		}
 	}
+function referral_study($start_date,$mysqli)
+	{
+		$q="Select sum(`voucher_amount`) amount from `referral_study`";
+		$row=$mysqli->query($q);
+		$row=$row->fetch_assoc();
+		$line=array($row['amount'],$start_date);
+		$handle = fopen("study.csv", "a");
+		fputcsv($handle, $line);
+		$q="Truncate `referral_study` ";
+		$mysqli->query($q);
+	}	
 ?>

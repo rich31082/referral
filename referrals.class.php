@@ -197,13 +197,15 @@ class referral
  					$q=$this->mysqli->query($q);
  					$voucher=$this->mysqli->insert_id;
  				//	echo('voucher'.$voucher);
- 					$q="Update `referrals` Set `voucher`=$voucher where `aggressor_res_number`=$this->aggressor_res AND `contactID`=$this->contactID";
+ 					$q="Update `referrals` Set `voucher`=$voucher, `date_processed`=$today where `aggressor_res_number`=$this->aggressor_res AND `contactID`=$this->contactID";
+ 					//die($q);
  					$this->mysqli->query($q);
  					
 				}	
 			function insert()
 				{	//echo($this->email);
-					$q="Insert into `referrals` (`contactID`,`resellerID`,`aggressor_res_number`,`aggressor_date`,`reseller_res_number`,`months_apart`,`voucher_amount`,`percentage_at_time`,`status`,`final_payment_id`,`company`,`email`) Values ($this->contactID,$this->reseller,$this->aggressor_res,$this->aggressor_date,$this->reseller_res,$this->months_apart,$this->amount,$this->percentage*100,'".$this->status."',$this->final_payment_id,'".$this->reseller_name."','".$this->email."')";
+					$today = date("Ymd");
+					$q="Insert into `referral_study` (`contactID`,`resellerID`,`aggressor_res_number`,`aggressor_date`,`reseller_res_number`,`months_apart`,`voucher_amount`,`percentage_at_time`,`status`,`final_payment_id`,`company`,`email`,`date_added`) Values ($this->contactID,$this->reseller,$this->aggressor_res,$this->aggressor_date,$this->reseller_res,$this->months_apart,$this->amount,$this->percentage*100,'".$this->status."',$this->final_payment_id,'".$this->reseller_name."','".$this->email."',$today)";
 					//echo($q);
 					$this->mysqli->query($q);
 
