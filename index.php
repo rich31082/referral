@@ -36,7 +36,7 @@ $referral_array=array();
 function scan($mysqli,$months_apart,$percentage)
 	{	//study mode
 		$year=14;
-		while($year<=14)
+		while($year<=17)
 		{
 		$month=1;
 			while($month<=12)
@@ -50,11 +50,11 @@ function scan($mysqli,$months_apart,$percentage)
 						$state_month=$month;
 					}				
 		$start_date='20'.$year.$state_month.'01';
-		//study mode
-		//$start_date='';
+		//study mode*/
+		//$start_date='20150101';
 		echo($start_date);
 		$q="Select a.* from `reservation_payments` a where not exists (Select * from `referral_study` where a.`reservation_paymentID`=`final_payment_id`) and a.`final_payment_marker`=1 and a.`payment_date`>=$start_date";
-		
+	
 		$row=$mysqli->query($q);
 		while($value=$row->fetch_assoc())
 					{
@@ -62,7 +62,7 @@ function scan($mysqli,$months_apart,$percentage)
 					}
 		//study mode
 		
-		//referral_study($start_date,$mysqli);			
+	//	referral_study($start_date,$mysqli);			
 				$month++;
 				}//month loop
 		$year++;
@@ -88,9 +88,11 @@ function check_reservations($res_array,$mysqli,$months_apart,$percentage)
 				{//	die('months_apart'.$months_apart);
 					$passenger=new referral($aggressor_passenger['passengerID'],$ref->resid,$ref->date_aggressor,$mysqli,$months_apart,$percentage);
 						//print_r($passenger);
-						if($passenger->valid)
+						if($passenger->valid&&$passenger->first_pass)
 						{	
 							//array_push($referral_array,$passenger);
+							
+							//echo('insert'.$passenger);
 							$passenger->insert();
 
 						}

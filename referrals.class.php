@@ -15,8 +15,9 @@ class referral_reservation_check
 			}
 		 function get_reseller()	
 			{	
-				$q="SELECT r.`reservation_date`,`resellerID` FROM `reservations` r, `reseller_agents` a where r.`reseller_agentID`=a.`reseller_agentID` and r.`reservationID`=$this->resid order by r.`reservation_date` desc";
-
+				$q="SELECT r.`reservation_date`,a.`resellerID` FROM `reservations` r, `reseller_agents` a, `resellers` s where r.`reseller_agentID`=a.`reseller_agentID` and r.`reservationID`=$this->resid and s.`resellerID`=a.`resellerID` and 
+				s.`status`='ACTIVE' order by r.`reservation_date` desc";
+			//	die($q);
 				$result = ($this->mysqli->query($q));
 					$result=$result->fetch_assoc();
 					if($result['resellerID']==19)
@@ -69,6 +70,7 @@ class referral
 		var $months_apart;
 		var $final_payment_id;
 		var $email;
+		var $first_pass;
 			function __construct($passenger,$aggressor_res,$aggressor_date,$mysqli,$distance,$percentage)
 				{
 					$this->mysqli=$mysqli;
@@ -80,7 +82,7 @@ class referral
 					$this->status='New';
 					$this->get_last_reseller_res();
 					$this->get_final_payment_id();
-
+					$this->get_pass_first_res();	
 				}
 			function get_final_payment_id()
 				{
@@ -102,7 +104,7 @@ class referral
 					
 				}	
 			function get_last_reseller_res()
-				{	$q="SELECT i.`reservationID`,i.`inventoryID`,r.`reseller_agentID`,s.`resellerID`,r.`reservation_date`,a.`company`,a.`email` FROM `inventory` i, `reservations` r,`reseller_agents` s,`resellers` a WHERE a.`resellerID`=s.`resellerID` and i.`reservationID` = r.`reservationID` and s.`reseller_agentID`=r.`reseller_agentID` and `passengerID`= $this->contactID and s.`resellerID`!=19 and i.`reservationID`!=$this->aggressor_res order by r.`reservation_date` desc limit 1";
+				{	$q="SELECT i.`reservationID`,i.`inventoryID`,r.`reseller_agentID`,s.`resellerID`,r.`reservation_date`,a.`company`,a.`email` FROM `inventory` i, `reservations` r,`reseller_agents` s,`resellers` a WHERE a.`resellerID`=s.`resellerID` and i.`reservationID` = r.`reservationID` and s.`reseller_agentID`=r.`reseller_agentID` and `passengerID`= $this->contactID and s.`resellerID`!=19 and i.`reservationID`!=$this->aggressor_res and `r.reservation_date`<=$this->aggressor_date order by r.`reservation_date` desc limit 1";
 				//test query
 		/*			$q="SELECT i.`reservationID`,i.`inventoryID`,r.`reseller_agentID`,s.`resellerID`,r.`reservation_date`,a.`company`,s.`email` FROM `inventory` i, `reservations` r,`reseller_agents` s,`resellers` a WHERE a.`resellerID`=s.`resellerID` and i.`reservationID` = r.`reservationID` and s.`reseller_agentID`=r.`reseller_agentID` and `passengerID`= $this->contactID and s.`resellerID`!=19 and i.`reservationID`!=$this->aggressor_res and r.`reservation_date`<=$this->aggressor_date order by r.`reservation_date`desc limit 1";
 		*/			$row=$this->mysqli->query($q);
@@ -165,7 +167,7 @@ class referral
 				}
 			function get_referral($refID)
 				{
-					$q="Select * from `referrals` where `referral_ID` = $refID";
+					$q="Select * from `referral_study` where `referral_ID` = $refID";
 					$row=$mysqli->query($q);
 					$row=$row->fetch_assoc();
 					extract($row);
@@ -209,7 +211,32 @@ class referral
 					//echo($q);
 					$this->mysqli->query($q);
 
-				}					
+				}
+			function get_pass_first_res()
+				{
+					$q="Select i.`reservationID`,r.`reseller_agentID`,a.`resellerID` from `inventory` i,`reservations` r,`reseller_agents` a  where a.`reseller_agentID`=r.`reseller_agentID` and i.`reservationID`= r.`reservationID` and i.`passengerID`=$this->contactID order by r.`reservation_date` ASC limit 1";
+					
+					$row=$this->mysqli->query($q);
+					$row=$row->fetch_assoc();
+					if($row['resellerID']!=19)
+							{	$q="Select `referral_id` from `referral_study` where `contactID`=$this->contactID";
+								
+								$result=$this->mysqli->query($q);
+								$num=$result->num_rows;
+								
+									if($num==0)
+										{
+											$this->first_pass=true;
+											
+										}
+										else
+										{
+											$this->first_pass=false;
+										}	
+										
+							}
+							
+				}						
 
 	}		
 			
